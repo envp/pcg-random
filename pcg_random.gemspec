@@ -5,7 +5,7 @@ require 'pcg_random/version'
 
 Gem::Specification.new do |spec|
   spec.name          = 'pcg_random'
-  spec.version       = PcgRandom::VERSION
+  spec.version       = PCGRandom::VERSION
   spec.authors       = ['Vaibhav Yenamandra']
   spec.email         = ['yvvaibhav@gmail.com']
 
@@ -32,4 +32,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rake', '~> 10.0'
   spec.add_development_dependency 'rake-compiler'
   spec.add_development_dependency 'rspec', '~> 3.0'
+  spec.add_development_dependency 'pry'
 end

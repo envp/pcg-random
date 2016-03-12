@@ -1,6 +1,6 @@
 require "pcg_random/version"
 require "pcg_random/pcg_random"
 
-module PcgRandom
+module PCGRandom
   # Your code goes here...
 end
