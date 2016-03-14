@@ -1,8 +1,8 @@
 require "mkmf"
 
-$CFLAGS = "-Wall -std=c99"
-
 RbConfig::MAKEFILE_CONFIG['CC'] = ENV['CC'] if ENV['CC']
+
+$CFLAGS = "-Wall -std=c99"
 
 LIBDIR      = RbConfig::CONFIG['libdir']
 INCLUDEDIR  = RbConfig::CONFIG['includedir']
@@ -20,6 +20,9 @@ LIB_DIRS = [
   LIBDIR,
   '/usr/lib',
 ]
+
+abort 'libpcgrandom is missing' unless find_header('pcg_variants.h')
+abort 'entropy.h missing' unless find_header('entropy.h')
 
 dir_config('pcg_random', HEADER_DIRS, LIB_DIRS)
 create_makefile("pcg_random/pcg_random")

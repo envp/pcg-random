@@ -11,4 +11,6 @@ Rake::ExtensionTask.new("pcg_random") do |ext|
   ext.lib_dir = "lib/pcg_random"
 end
 
+task :cc => [:clean, :compile]
+
 task :default => [:clobber, :compile, :spec]
