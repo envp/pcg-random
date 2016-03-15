@@ -1,3 +1,4 @@
+# Defaults
 /.bundle/
 /.yardoc
 /Gemfile.lock
@@ -7,8 +8,15 @@
 /pkg/
 /spec/reports/
 /tmp/
+
+# Compiled binaries
 *.bundle
 *.so
 *.o
 *.a
-mkmf.log
+
+# logs
+*.log
+
+# Github commit messages
+.gitmsg

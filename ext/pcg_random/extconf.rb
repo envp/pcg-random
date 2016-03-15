@@ -2,7 +2,7 @@ require "mkmf"
 
 RbConfig::MAKEFILE_CONFIG['CC'] = ENV['CC'] if ENV['CC']
 
-$CFLAGS = "-Wall -std=c99"
+$CFLAGS = "-Wall -pedantic -ansi -std=c99"
 
 LIBDIR      = RbConfig::CONFIG['libdir']
 INCLUDEDIR  = RbConfig::CONFIG['includedir']
