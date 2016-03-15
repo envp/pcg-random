@@ -20,3 +20,7 @@
 
 # Github commit messages
 .gitmsg
+
+# Benchmark code till I find an alternative way that doesn't piss off
+# rake-compiler
+/bench/
