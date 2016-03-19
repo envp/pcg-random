@@ -7,7 +7,7 @@
 #include "pcg_random.h"
 #include "pcg_seed.h"
 
-VALUE rb_mPCGRandom;
+VALUE rb_cPCGRandom;
 
 void
 Init_pcg_random(void)
@@ -16,9 +16,9 @@ Init_pcg_random(void)
     pcg_init_rb_constants();
     
     /* Define encapsulating module */
-    rb_mPCGRandom = rb_define_module("PCGRandom");
+    rb_cPCGRandom = rb_define_class("PCGRandom", rb_cObject);
     
     /* Define methods under PCGRandom */
-    rb_define_module_function(rb_mPCGRandom, "new_seed", pcg_func_new_seed, 0);
-    rb_define_module_function(rb_mPCGRandom, "raw_seed", pcg_func_raw_seed, 1);
+    rb_define_singleton_method(rb_cPCGRandom, "new_seed", pcg_func_new_seed, -1);
+    rb_define_singleton_method(rb_cPCGRandom, "raw_seed", pcg_func_raw_seed, 1);
 }

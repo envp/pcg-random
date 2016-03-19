@@ -4,6 +4,6 @@
 #include <ruby.h>
 #include <inttypes.h>
 
-extern VALUE rb_mPCGRandom;
+extern VALUE rb_cPCGRandom;
 
 #endif /* PCG_RANDOM_H */

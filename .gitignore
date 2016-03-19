@@ -8,7 +8,7 @@
 /pkg/
 /spec/reports/
 /tmp/
-
+/vendor/
 # Compiled binaries
 *.bundle
 *.so
