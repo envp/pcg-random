@@ -14,7 +14,3 @@ end
 task :cc => [:clean, :compile]
 
 task :default => [:clobber, :compile, :spec]
-
-task :bench do
-  PCGBench.press
-end

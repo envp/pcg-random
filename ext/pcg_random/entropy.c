@@ -61,17 +61,21 @@
 
 #if HAVE_DEV_RANDOM 
 /* entropy_getbytes(dest, size):
- *     Use /dev/random to get some external entropy for seeding purposes.
+ *     Use /dev/urandom to get some external entropy for seeding purposes.
  *
  * Note:
- *     If reading /dev/random fails (which ought to never happen), it returns
+ *     If reading /dev/urandom fails (which ought to never happen), it returns
  *     false, otherwise it returns true.  If it fails, you could instead call
  *     fallback_entropy_getbytes which always succeeds.
+ * Note2:
+ *     This version is an edited copy of the original entropy.c used in pcg-c
+ *     It uses /dev/urandom instead of /dev/random 
+ *     (Read: http://www.2uo.de/myths-about-urandom/)
  */
 
 bool entropy_getbytes(void* dest, size_t size)
 {
-    int fd = open("/dev/random", O_RDONLY);
+    int fd = open("/dev/urandom", O_RDONLY);
     if (fd < 0)
         return false;
     int sz = read(fd, dest, size);
@@ -88,7 +92,7 @@ bool entropy_getbytes(void* dest, size_t size)
 #endif
 
 /* fallback_entropy_getbytes(dest, size):
- *     Works like the /dev/random version above, but avoids using /dev/random.
+ *     Works like the /dev/urandom version above, but avoids using /dev/random.
  *     Instead, it uses a private RNG (so that repeated calls will return
  *     different seeds).  Makes no attempt at cryptographic security.
  */

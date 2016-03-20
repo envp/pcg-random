@@ -19,7 +19,7 @@
 *.log
 
 # Github commit messages
-.gitmsg
+gitmsg.md
 
 # Benchmark code till I find an alternative way that doesn't piss off
 # rake-compiler

@@ -1,7 +1,7 @@
 #include <ruby.h>
 #include <pcg_variants.h>
 #include <stdbool.h>
-#include <inttypes.h>
+#include <stdint.h>
 
 #include "entropy.h"
 #include "rb_constants.h"
@@ -11,7 +11,7 @@ static VALUE pcg_new_seed_bytestr(unsigned long seed_size);
 static VALUE pcg_raw_seed_bytestr(size_t size);
 
 /*
- * Returns a n-bit integer that stores the seed value used to seed the 
+ * Returns a n-byte integer that stores the seed value used to seed the 
  * initial state and sequence for the PCG generator.
  * If no parameters are supplied it default to a 128-bit seed size
  * 
@@ -40,7 +40,7 @@ pcg_func_new_seed(int argc, VALUE *argv, VALUE self)
     {
         rb_raise(rb_eArgError, "Seed size must be even! Found %lu", n);
     }
-    return pcg_new_seed_bytestr(n * sizeof(char));
+    return pcg_new_seed_bytestr(n * sizeof(uint8_t));
 }
 
 /*
@@ -72,7 +72,7 @@ pcg_func_entropy_getbytes(void *dest, size_t size)
         fallback_entropy_getbytes(dest, size);
         return true;
     }
-    return false;
+    return true;
 }
 
 /*
@@ -106,15 +106,13 @@ pcg_raw_seed_bytestr(size_t size)
 static VALUE
 pcg_new_seed_bytestr(unsigned long seed_size)
 {
-    VALUE result, base;
-    unsigned long x;
+    VALUE result;
+    uint8_t *bytes = (uint8_t *) malloc(seed_size * sizeof(uint8_t));
+    unsigned long *buf = (unsigned long *) malloc(seed_size * sizeof(unsigned long));
     
-    uint8_t *bytes = (uint8_t *) malloc(seed_size);
-    
-    if(bytes == NULL)
+    if(bytes == NULL || buf == NULL)
     {
-        rb_raise(rb_eNoMemError, 
-            "Could not malloc enough memory for %lu byte seed!", seed_size);
+        rb_raise(rb_eNoMemError, "Could not malloc enough memory!");
     }
     
     memset(bytes, 0, seed_size);
@@ -124,51 +122,19 @@ pcg_new_seed_bytestr(unsigned long seed_size)
         rb_raise(rb_eRuntimeError, "Unable to generate seed!");
     }
     
-    /*
-     * Unpacking array of 8-bit uints into a Fixnum / Bignum
-     */
-    
-    base = INT2FIX(256);
-    result = pcg_rb_zero;
-    
-    /*
-     * First entry in array corresponds to highest significance
-     *
-     * The below loop is effectively converting a base 256 number to base 10
-     * given 8 1-byte unsigned numbers
-     */
+    // Populate an array of longs to feed to rb_big_unpack()
     for(int i = 0; i < seed_size; ++i)
     {
-        // result = ((a0*K + a1)*K + a2)*K + ... )
-        
-        switch(TYPE(result))
-        {
-            case T_FIXNUM:
-                x = NUM2ULONG(result);
-                result = ULONG2NUM(x + bytes[i]);
-                break;
-            case T_BIGNUM:
-                result = rb_big_plus(result, UINT2NUM(bytes[i]));
-                break;
-            default:
-                rb_num_coerce_bin(result, UINT2NUM(bytes[i]), '+');
-        }
-        
-        // a_n1 = k * (a_n1)
-        switch(TYPE(result))
-        {
-            case T_FIXNUM:
-                x = NUM2ULONG(result);
-                result = ULONG2NUM(x * 256u);
-                break;
-            case T_BIGNUM:
-                result = rb_big_mul(result, base);
-                break;
-            default:
-                rb_num_coerce_bin(result, base, '*');
-        }
+        buf[i] = (unsigned long) bytes[i];
     }
+    
+    // Inspired from ruby's very own random.c
+    // see: http://rxr.whitequark.org/mri/source/random.c#493
+    // Also: http://rxr.whitequark.org/mri/source/random.c#443
+    result = rb_big_unpack(buf, seed_size);
+    
     free(bytes);
+    free(buf);
+    
     return result;
 }
-
