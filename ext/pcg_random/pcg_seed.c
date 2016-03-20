@@ -1,6 +1,7 @@
 #include <ruby.h>
 #include <pcg_variants.h>
 #include <stdbool.h>
+#include <inttypes.h>
 
 #include "entropy.h"
 #include "rb_constants.h"
@@ -8,7 +9,6 @@
 
 static VALUE pcg_new_seed_bytestr(unsigned long seed_size);
 static VALUE pcg_raw_seed_bytestr(size_t size);
-static VALUE pcg_rb_unpack_str_uint(VALUE str);
 
 /*
  * Returns a n-bit integer that stores the seed value used to seed the 
@@ -16,7 +16,7 @@ static VALUE pcg_rb_unpack_str_uint(VALUE str);
  * If no parameters are supplied it default to a 128-bit seed size
  * 
  * @param size Number of bytes (EVEN!) that the generated seed must contain.
- *  Defaults to 16 Bytes = 128 bits
+ *  Defaults to 16 Bytes (uint8_t) = 128 bits
  *
  * @raise ArgumentError if size is not even
  */ 
@@ -28,7 +28,7 @@ pcg_func_new_seed(int argc, VALUE *argv, VALUE self)
     
     if(argc == 0)
     {
-        return pcg_new_seed_bytestr(2 * sizeof(uint64_t));
+        return pcg_new_seed_bytestr(16 * sizeof(uint8_t));
     }
     
     rb_scan_args(argc, argv, "01", &seed_size);
@@ -67,37 +67,12 @@ bool
 pcg_func_entropy_getbytes(void *dest, size_t size)
 {
     // Get random bytes from /dev/random or a fallback source
-    return entropy_getbytes(dest, size);
-}
-
-/*
- * Internal - Unpacks a string `str` wuth String#unpack
- */
-static VALUE
-pcg_rb_unpack_str_uint(VALUE str)
-{
-    VALUE ary, result, current, base;
-    unsigned long len;
-    
-    // This would be an array of 8 bit fixnums, effectively representing it in
-    // base-256
-    ary = rb_funcall(str, rb_intern("unpack"), 1, rb_str_new2("C*\0"));
-    len = RARRAY_LEN(ary);
-    
-    base = INT2FIX(256);
-    result = pcg_rb_zero;
-    
-    // First entry in array corresponds to highest significance
-    for(int i = 0; i < len; ++i)
+    if(!entropy_getbytes(dest, size))
     {
-        current = rb_ary_entry(ary, i);
-        // Maybe optimize the below code based on on TYPE(result) later ?
-        // Currently this doesnt utilize the C-API a effectively
-        result = rb_funcall(result, pcg_rb_plus, 1, current);
-        result = rb_funcall(result, pcg_rb_mul, 1 , base);
+        fallback_entropy_getbytes(dest, size);
+        return true;
     }
-    
-    return result;
+    return false;
 }
 
 /*
@@ -107,9 +82,13 @@ pcg_rb_unpack_str_uint(VALUE str)
 static VALUE
 pcg_raw_seed_bytestr(size_t size)
 {
-    char *bytestr = (char *) malloc(size + 1);
     VALUE result;
-    
+    char *bytestr = (char *) malloc(size + 1);
+    if(bytestr == NULL)
+    {
+        rb_raise(rb_eNoMemError, 
+            "Could not malloc enough space for %lu-byte seed!", size);
+    }
     memset(bytestr, 0, size + 1);
     pcg_func_entropy_getbytes((void *)bytestr, size);
     
@@ -127,8 +106,69 @@ pcg_raw_seed_bytestr(size_t size)
 static VALUE
 pcg_new_seed_bytestr(unsigned long seed_size)
 {
-    VALUE seed_bytes_str;
-    seed_bytes_str = pcg_raw_seed_bytestr(seed_size);
-    return pcg_rb_unpack_str_uint(seed_bytes_str);
+    VALUE result, base;
+    unsigned long x;
+    
+    uint8_t *bytes = (uint8_t *) malloc(seed_size);
+    
+    if(bytes == NULL)
+    {
+        rb_raise(rb_eNoMemError, 
+            "Could not malloc enough memory for %lu byte seed!", seed_size);
+    }
+    
+    memset(bytes, 0, seed_size);
+    
+    if(!pcg_func_entropy_getbytes((void *)bytes, seed_size))
+    {
+        rb_raise(rb_eRuntimeError, "Unable to generate seed!");
+    }
+    
+    /*
+     * Unpacking array of 8-bit uints into a Fixnum / Bignum
+     */
+    
+    base = INT2FIX(256);
+    result = pcg_rb_zero;
+    
+    /*
+     * First entry in array corresponds to highest significance
+     *
+     * The below loop is effectively converting a base 256 number to base 10
+     * given 8 1-byte unsigned numbers
+     */
+    for(int i = 0; i < seed_size; ++i)
+    {
+        // result = ((a0*K + a1)*K + a2)*K + ... )
+        
+        switch(TYPE(result))
+        {
+            case T_FIXNUM:
+                x = NUM2ULONG(result);
+                result = ULONG2NUM(x + bytes[i]);
+                break;
+            case T_BIGNUM:
+                result = rb_big_plus(result, UINT2NUM(bytes[i]));
+                break;
+            default:
+                rb_num_coerce_bin(result, UINT2NUM(bytes[i]), '+');
+        }
+        
+        // a_n1 = k * (a_n1)
+        switch(TYPE(result))
+        {
+            case T_FIXNUM:
+                x = NUM2ULONG(result);
+                result = ULONG2NUM(x * 256u);
+                break;
+            case T_BIGNUM:
+                result = rb_big_mul(result, base);
+                break;
+            default:
+                rb_num_coerce_bin(result, base, '*');
+        }
+    }
+    free(bytes);
+    return result;
 }
 
