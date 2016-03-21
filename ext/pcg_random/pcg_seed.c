@@ -15,8 +15,10 @@ static VALUE pcg_raw_seed_bytestr(size_t size);
  * initial state and sequence for the PCG generator.
  * If no parameters are supplied it default to a 128-bit seed size
  * 
- * @param size Number of bytes (EVEN!) that the generated seed must contain.
- *  Defaults to 16 Bytes (uint8_t) = 128 bits
+ * @param size Number of bytes that the generator must use to make the seed.
+ *  This is optional and must be even when given.
+ *  Defaults to 16 Bytes (uint8_t), which is later use to create 2 64-bit 
+ *  unsinged ints for use as seeds
  *
  * @raise ArgumentError if size is not even
  */ 
@@ -28,7 +30,7 @@ pcg_func_new_seed(int argc, VALUE *argv, VALUE self)
     
     if(argc == 0)
     {
-        return pcg_new_seed_bytestr(16 * sizeof(uint8_t));
+        return pcg_new_seed_bytestr(DEFAULT_SEED_BYTES * sizeof(uint8_t));
     }
     
     rb_scan_args(argc, argv, "01", &seed_size);
@@ -46,7 +48,7 @@ pcg_func_new_seed(int argc, VALUE *argv, VALUE self)
 /*
  * Generates a random seed string represented as a sequence of bytes 
  *
- * @param size Size of the bytestring to generate
+ * @param byte_size Size of the bytestring to generate
  */
 VALUE
 pcg_func_raw_seed(VALUE self, VALUE byte_size)
@@ -108,9 +110,9 @@ pcg_new_seed_bytestr(unsigned long seed_size)
 {
     VALUE result;
     uint8_t *bytes = (uint8_t *) malloc(seed_size * sizeof(uint8_t));
-    unsigned long *buf = (unsigned long *) malloc(seed_size * sizeof(unsigned long));
+    // unsigned long *buf = (unsigned long *) malloc(seed_size * sizeof(unsigned long));
     
-    if(bytes == NULL || buf == NULL)
+    if(bytes == NULL)
     {
         rb_raise(rb_eNoMemError, "Could not malloc enough memory!");
     }
@@ -122,19 +124,11 @@ pcg_new_seed_bytestr(unsigned long seed_size)
         rb_raise(rb_eRuntimeError, "Unable to generate seed!");
     }
     
-    // Populate an array of longs to feed to rb_big_unpack()
-    for(int i = 0; i < seed_size; ++i)
-    {
-        buf[i] = (unsigned long) bytes[i];
-    }
-    
     // Inspired from ruby's very own random.c
     // see: http://rxr.whitequark.org/mri/source/random.c#493
-    // Also: http://rxr.whitequark.org/mri/source/random.c#443
-    result = rb_big_unpack(buf, seed_size);
-    
+    // Likely to change as I understand the marshall/unmarshall code better
+    result = rb_integer_unpack(bytes, seed_size, sizeof(uint8_t), 0, 
+                INTEGER_PACK_MSWORD_FIRST|INTEGER_PACK_NATIVE_BYTE_ORDER);
     free(bytes);
-    free(buf);
-    
     return result;
 }

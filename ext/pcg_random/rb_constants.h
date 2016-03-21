@@ -4,12 +4,7 @@
 #include <ruby.h>
 
 extern VALUE pcg_rb_zero,
-             pcg_rb_one,
-             pcg_rb_big_zero,
-             pcg_rb_big_one;
-             
-extern ID pcg_rb_plus, 
-          pcg_rb_mul;
+             pcg_rb_one;
 
 void pcg_init_rb_constants(void);
 
