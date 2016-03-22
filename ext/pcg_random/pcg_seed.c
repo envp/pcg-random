@@ -62,6 +62,31 @@ pcg_func_raw_seed(VALUE self, VALUE byte_size)
 }
 
 /*
+ * Import an integer from a buffer, assuming it was packed with the flag:
+ * INTEGER_PACK_MSWORD_FIRST|INTEGER_PACK_NATIVE_BYTE_ORDER
+ * (bigendian with native byte order)
+ */
+VALUE 
+pcg_rb_int_unpack_bigendian_native_order(const void *words, size_t numwords, size_t wordsize)
+{
+    return rb_integer_unpack(words, numwords, wordsize, 0, 
+        INTEGER_PACK_MSWORD_FIRST|INTEGER_PACK_NATIVE_BYTE_ORDER);
+}
+
+/*
+ * Export an integer into a buffer with the packing flag set as:
+ * INTEGER_PACK_MSWORD_FIRST|INTEGER_PACK_NATIVE_BYTE_ORDER
+ * (bigendian with native byte order)
+ */
+int 
+pcg_rb_int_pack_bigendian_native_order(VALUE val, void *words, size_t numwords, size_t wordsize)
+{
+    
+    return rb_integer_pack(val, words, numwords, wordsize, 0, 
+        INTEGER_PACK_MSWORD_FIRST|INTEGER_PACK_NATIVE_BYTE_ORDER);
+}
+
+/*
  * Generates a sequence of random bytes using device entropy
  * or a fallback mechanism based on pcg32_random_r
  */
@@ -127,8 +152,8 @@ pcg_new_seed_bytestr(unsigned long seed_size)
     // Inspired from ruby's very own random.c
     // see: http://rxr.whitequark.org/mri/source/random.c#493
     // Likely to change as I understand the marshall/unmarshall code better
-    result = rb_integer_unpack(bytes, seed_size, sizeof(uint8_t), 0, 
-                INTEGER_PACK_MSWORD_FIRST|INTEGER_PACK_NATIVE_BYTE_ORDER);
+    result = pcg_rb_int_unpack_bigendian_native_order(bytes, seed_size, sizeof(uint8_t));
+    
     free(bytes);
     return result;
 }
