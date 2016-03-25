@@ -7,62 +7,82 @@
 #include "pcg_seed.h"
 #include "pcg_sfrand.h"
 
-static void pcg_init_global_rng(uint64_t initstate, uint64_t initseq);
-
-pcg_rb_seed_t *pcg_rb_global_state;
+pcg_rb_seed_t pcg_rb_global_state;
 bool _global_state_initialized;
 
-
 /*
+ * Initializes the global rng state with a seed.
+ * @param seed The seed to use for initializing state & sequence. 
+ *  Defaults to PCRandom.new_seed
  * 
- * 
+ * @return last seed used for srand() or nil if this is the first time this
+ *  is being called
  */
 VALUE
-pcg_func_init_global_rng(int argc, VALUE *argv, VALUE self)
+pcg_func_srand(int argc, VALUE *argv, VALUE self)
 {
-    VALUE seed, old_seed;
-    uint64_t params[2];
-    uint64_t old_params[2] = {
-        pcg_rb_global_state->state, 
-        pcg_rb_global_state->seq
-    };
+    VALUE old_seed, seed;
+    uint64_t state, seq;
     
-    if(_global_state_initialized)
+    old_seed = _global_state_initialized ? pcg_rb_global_state.seed : Qnil;
+    
+    if(argc == 0)
     {
-        old_seed = pcg_rb_int_unpack_bigendian_native_order(old_params, 2,
-            sizeof(uint64_t));
-        if(argc == 0)
-        {
-            pcg_init_global_rng_default();
-        }
-        else
-        {
-            rb_scan_args(argc, argv, "01", &seed);
-            pcg_rb_int_pack_bigendian_native_order(seed, params, 2, 
-                sizeof(uint64_t));
-            pcg_init_global_rng(params[0], params[1]);
-        }
+        seed = pcg_new_seed_bytestr(DEFAULT_SEED_BYTES * sizeof(uint8_t));
     }
     else
     {
-        old_seed = Qnil;
-        pcg_init_global_rng_default();
+        rb_scan_args(argc, argv, "01", &seed);
     }
+
+    pcg_rb_set_seed(&pcg_rb_global_state, seed);
+    
+    memcpy(&state, pcg_rb_global_state.bytes, 
+        ((pcg_rb_global_state.size) / 2) * sizeof(uint8_t));
+    memcpy(&seq, pcg_rb_global_state.bytes + pcg_rb_global_state.size / 2, 
+        ((pcg_rb_global_state.size) / 2) * sizeof(uint8_t));
+    
+    pcg32_srandom(state, seq);
+    _global_state_initialized = true;
     return old_seed;
 }
 
 void
-pcg_init_global_rng_default(void)
+pcg_rb_set_seed(pcg_rb_seed_t *seed, VALUE seedval)
 {
-    pcg_rb_global_state = (pcg_rb_seed_t *) malloc(sizeof(pcg_rb_seed_t));
-    pcg_func_entropy_getbytes((void *)pcg_rb_global_state, sizeof(pcg_rb_seed_t));
-    pcg32_srandom(pcg_rb_global_state->state, pcg_rb_global_state->seq);
-    _global_state_initialized = true;
+    seed->seed = seedval;
+    // Currently only 16 byte seeds are supported.
+    seed->size = DEFAULT_SEED_BYTES;
+    pcg_rb_int_pack_bigendian_native_order(seed->seed, seed->bytes, 
+        seed->size / sizeof(uint8_t), seed->size);
+
 }
 
-static
-void pcg_init_global_rng(uint64_t initstate, uint64_t initseq)
+/**
+ * Iniitalize the global rng state. Exits prematurely if already initialized
+ * 
+ * @return true if the global state was initialized with new values. false
+ *  if the global state is already set, no changes are made in this scenario.
+ */
+bool
+pcg_rb_init_global_state(void)
 {
-    pcg32_srandom(initstate, initseq);
+    if(_global_state_initialized)
+    {
+        return false;
+    }
+    uint64_t state, seq;
+    
+    VALUE seed = pcg_new_seed_bytestr(DEFAULT_SEED_BYTES);
+    pcg_rb_set_seed(&pcg_rb_global_state, seed);
+
+    memcpy(&state, pcg_rb_global_state.bytes, 
+        ((pcg_rb_global_state.size) / 2) * sizeof(uint8_t));
+    memcpy(&seq, pcg_rb_global_state.bytes + pcg_rb_global_state.size / 2, 
+        ((pcg_rb_global_state.size) / 2) * sizeof(uint8_t));
+
+    pcg32_srandom(state, seq);
+    
     _global_state_initialized = true;
+    return true;
 }

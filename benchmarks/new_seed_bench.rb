@@ -4,18 +4,19 @@ require 'pcg_random'
 # Benchmark of Random.new_seed vs PCGRandom.new_seed
 # ==================================================
 #
-# Benchmark created around: 2016-03-21 17:00:21 +0000
+# Benchmark created around: 2016-03-24 18:20:57 +0000
 #
 # Running for: 100000 iterations
 #
 # Rehearsal ------------------------------------------------------
-# Random.new_seed      0.090000   1.070000   1.160000 (  1.156125)
-# PCGRandom.new_seed   0.130000   1.040000   1.170000 (  1.174559)
-# --------------------------------------------- total: 2.330000sec
+# Random.new_seed      0.100000   1.040000   1.140000 (  1.132634)
+# PCGRandom.new_seed   0.080000   1.000000   1.080000 (  1.088872)
+# --------------------------------------------- total: 2.220000sec
 #
 #                         user     system      total        real
-# Random.new_seed      0.100000   1.080000   1.180000 (  1.185971)
-# PCGRandom.new_seed   0.070000   1.050000   1.120000 (  1.115313)
+# Random.new_seed      0.080000   1.030000   1.110000 (  1.107880)
+# PCGRandom.new_seed   0.130000   0.980000   1.110000 (  1.102163)
+
 
 Iterations = 100_000
 
