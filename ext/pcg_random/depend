@@ -1,0 +1,3 @@
+entropy.o: entropy.c pcg_spinlock.h entropy.h
+pcg_random.o: pcg_random.c pcg_random.h pcg_seed.h
+pcg_seed.o: pcg_seed.c entropy.h pcg_seed.h

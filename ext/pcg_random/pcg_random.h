@@ -3,20 +3,20 @@
 
 #include <ruby.h>
 #include <stdint.h>
-#include <stdbool.h>
-
-#include "pcg_seed.h"
-
-/* Struct to hold a pointer to bytestring & ruby seed value */
-typedef struct pcg_rb_seed_t 
-{
-    VALUE seed;
-    size_t size;
-    uint8_t bytes[DEFAULT_SEED_BYTES];
-} pcg_rb_seed_t;
 
 extern VALUE rb_cPCGRandom;
-extern pcg_rb_seed_t pcg_rb_global_state;
-extern bool _global_state_initialized;
+
+struct pcg_rb_seed
+{
+    VALUE val;
+    uint64_t state;
+    uint64_t seq;
+};
+
+typedef struct
+{
+    struct pcg_rb_seed seed;
+    pcg32_random_t *rng;
+} pcg_rb_rand_t;
 
 #endif /* PCG_RANDOM_H */
