@@ -1,6 +1,8 @@
 #include <ruby.h>
+#include <ruby/util.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <limits.h>
 #include <math.h>
 #include <pcg_variants.h>
 
@@ -162,11 +164,101 @@ pcg_func_get_seq(VALUE self)
     return seq;
 }
 
+/*
+ * Get a random string of the given length
+ * 
+ * @param max The upperbound on numbers to generate, if not specified, outputs 
+ *  defaults to [0, 1)
+ */
+static VALUE
+pcg_func_rand_bytes(VALUE self, VALUE size)
+{
+    VALUE result;
+    pcg_rb_rand_t *rdata = pcg_get_rand_type(self);
+    size_t len = NUM2ULONG(size);
+    char *str = ALLOC_N(char, len);
+    
+    for(int i = 0; i < len; ++i)
+    {
+        str[i] = (char) pcg32_boundedrand_r(rdata->rng, CHAR_MAX);
+    }
+    result = rb_str_new(str, len);
+    xfree(str);
+    return result;
+}
+
+/*
+ * Return a random number between 0 and max value.
+ * 
+ * rand()           -> Float in [0, 1)
+ * rand(integer)    -> integer
+ * rand(float)      -> float
+ * rand(range)      -> Rturns a random number where range.member?(number) is true
+ *
+ * @param max Upper bound for the rng or the range of values that are acceptable
+ */
+static VALUE
+pcg_func_rand(int argc, VALUE *argv, VALUE self)
+{
+    VALUE max, tmp;
+    long ubound;
+    double num;
+    pcg_rb_rand_t *rdata = pcg_get_rand_type(self);
+    
+    if(argc == 0)
+    {
+        return pcg_rb_float32_rand(rdata->rng);
+    }
+    
+    rb_scan_args(argc, argv, "01", &max);
+    
+    if(NIL_P(max))
+    {
+        rb_raise(rb_eArgError, "Invalid argument - nil");
+    }
+    else if(FIXNUM_P(max))
+    {
+        ubound = FIX2LONG(max);
+        return pcg32_boundedrand_r(rdata->rng, ubound);
+    }
+    else if(TYPE(max) == T_BIGNUM)
+    {
+        tmp = pcg_rb_float32_rand(rdata->rng);
+        tmp = rb_big_mul(max, tmp);
+        num = floor(RFLOAT_VALUE(tmp));
+        if(FIXABLE(num))
+        {
+            return LONG2FIX((long) num);
+        }
+        return rb_dbl2big(num);
+    }
+    else if(TYPE(max) == T_FLOAT)
+    {
+        tmp = pcg_rb_float32_rand(rdata->rng);
+        return rb_funcall(max, rb_intern("*"), 1, tmp);
+        
+    }
+    else
+    {
+        rb_raise(rb_eArgError, 
+            "Found %s. Expecting Fixnum, Bignum, or Float", 
+            rb_obj_classname(max));
+    }
+}
+
+/**
+ * 
+ */
+VALUE 
+pcg_rb_float32_rand(pcg32_random_t *rng)
+{
+    double d = ldexp((double) pcg32_boundedrand_r(rng, UINT32_MAX), -32);
+    return DBL2NUM(d);
+}
+
 void
 Init_pcg_random(void)
 {
-    /* Initializations */
-
     /* Constants / Classes */
     rb_cPCGRandom = rb_define_class("PCGRandom", rb_cObject);
 
@@ -179,8 +271,8 @@ Init_pcg_random(void)
     /* Public instance methods */
     rb_define_alloc_func(rb_cPCGRandom, pcg_random_alloc);
     rb_define_attr(rb_cPCGRandom, "seed", 1, 0);
-    // rb_define_method(rb_cPCGRandom, "rand", pcg_func_rand, -1);
-    // rb_define_method(rb_cPCGRandom, "bytes", pcg_func_rand_bytes, 1);
+    rb_define_method(rb_cPCGRandom, "rand", pcg_func_rand, -1);
+    rb_define_method(rb_cPCGRandom, "bytes", pcg_func_rand_bytes, 1);
     // rb_define_method(rb_cPCGRandom, "initialize_copy", pcg_func_rand_copy, 1);
     // rb_define_method(rb_cPCGRandom, "==", pcg_func_equal, 1);
 

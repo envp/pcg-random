@@ -19,4 +19,6 @@ typedef struct
     pcg32_random_t *rng;
 } pcg_rb_rand_t;
 
+VALUE pcg_rb_float32_rand(pcg32_random_t *rng);
+
 #endif /* PCG_RANDOM_H */
