@@ -61,7 +61,7 @@ Or go ahead and try the API, it's built to be as close to `Kernel::Random` as po
  => #<PCGRandom:0x00000001bf3eb0 @seed=1234>
 ```
 
-For detailed instructions, keep checking this repo, I'm working on 
+For detailed instructions, keep checking this repo, I'm working on getting a wiki up.
 
 
 ## Benchmarks
