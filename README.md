@@ -1,6 +1,14 @@
 # PCGRandom
 [![Gem Version](https://badge.fury.io/rb/pcg_random.svg)](https://badge.fury.io/rb/pcg_random)
 
+```
+ _____ _____ _____ _____           _           
+|  _  |     |   __| __  |___ ___ _| |___ _____ 
+|   __|   --|  |  |    -| .'|   | . | . |     |
+|__|  |_____|_____|__|__|__,|_|_|___|___|_|_|_|
+
+```
+
 Ruby wrappers for the PCGRandom family of random number generators.
 
 ## Installation
