@@ -105,7 +105,7 @@ pcg_random_alloc(VALUE klass)
 }
 
 /*
- * Internal - Initialize the requested instance using a pre-allocated ruby
+ * Initialize the requested instance using a pre-allocated ruby
  * object (TypedStruct). Sets the instance variables and relevant accessor
  * methods where applicable.
  */
@@ -201,7 +201,7 @@ static VALUE
 pcg_func_rand(int argc, VALUE *argv, VALUE self)
 {
     VALUE max, tmp;
-    long ubound;
+    long u;
     double num;
     pcg_rb_rand_t *rdata = pcg_get_rand_type(self);
     
@@ -219,7 +219,7 @@ pcg_func_rand(int argc, VALUE *argv, VALUE self)
     else if(FIXNUM_P(max))
     {
         ubound = FIX2LONG(max);
-        return pcg32_boundedrand_r(rdata->rng, ubound);
+        return pcg32_boundedrand_r(rdata->rng, u);
     }
     else if(TYPE(max) == T_BIGNUM)
     {
@@ -228,7 +228,8 @@ pcg_func_rand(int argc, VALUE *argv, VALUE self)
         num = floor(RFLOAT_VALUE(tmp));
         if(FIXABLE(num))
         {
-            return LONG2FIX((long) num);
+            u = (long) num
+            return LONG2FIX(u);
         }
         return rb_dbl2big(num);
     }
