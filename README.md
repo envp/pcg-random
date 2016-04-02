@@ -9,7 +9,7 @@
 
 ```
 
-Ruby wrappers for the PCGRandom family of random number generators.
+Ruby wrappers for the PCG (Permuted LCG) family of random number generators.
 
 ## Installation
 
@@ -55,13 +55,21 @@ Either jump into your REPL of choice:
  => true
 ```
 
-Or go ahead and try the API, it's built to be as close to `Kernel::Random` as possible!
+Go ahead and try it, it's built to be as close to `Kernel::Random` as possible!
 
 ``` ruby
 2.3.0 :002 > seed = PCGRanom.new_seed
  => 315431527813695542666700950080169144774
 2.3.0 :003 > rng = PCGRanom.new 1234
- => #<PCGRandom:0x00000001bf3eb0 @seed=1234>
+ => #<PCGRandom:0x000000022bdf70 @seed=1234>
+2.3.0 :004 > rng.rand
+ => 0.48717727651819587
+2.3.0 :005 > rng.rand 1.618
+ => 1.0251792164160871
+2.3.0 :006 > rng.rand 189
+ => 184
+2.3.0 :007 > rng.rand 64499150491713080311265783184370031348
+ => 23781278266665729678291694765199065088
 ```
 
 For detailed instructions, keep checking this repo, I'm working on getting a wiki up.
@@ -108,6 +116,10 @@ PCGRandom.raw_seed(16)   0.090000   1.340000   1.430000 (  1.441253)
 
 ## Roadmap
 
-* Achieve full parity with `Kernel::Random`
-* Get a wiki explaining how to go about using this gem
-* Showcase benchmarks in some other place
+* Achieve parity with `Kernel::Random`
+* Make a wiki explaining how to go about using this gem
+  - Guide to install `libpcg_random`
+  - New contributor's / beginners guide
+  - Sample programs
+  - Benchmarks vs `Kernel::Random`
+* 
