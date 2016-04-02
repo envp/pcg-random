@@ -35,6 +35,9 @@ gem install pcg_random --with-pcg_random-include=directory/containing/pcg_varian
 
 # or, specify the custom path to the libpcg_random binary
 gem install pcg_random --with-pcg_random-lib=directory/containing/libpcg_random.a
+
+# Or, specify both the lib/ and include/ together to be under path/to/some/directory
+gem install pcg_random --with-pcg_random-dir=path/to/some/directory
 ```
 
 ## Development
