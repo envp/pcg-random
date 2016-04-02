@@ -203,7 +203,7 @@ pcg_func_rand(int argc, VALUE *argv, VALUE self)
         case T_BIGNUM:
             num = ldexp((double) pcg32_boundedrand_r(rdata->rng, UINT32_MAX), -32);
             result = rb_big_mul(max, DBL2NUM(num));
-            return rb_funcall(result, rb_intern("floor"), 0)
+            return rb_funcall(result, rb_intern("floor"), 0);
             break;
         case T_NIL:
             rb_raise(rb_eArgError, "Invalid argument - nil");
