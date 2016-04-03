@@ -1,17 +1,18 @@
+### PCGRandom.raw_seed(16)
 ```bash
 Benchmark of Random.raw_seed(16) vs PCGRandom.raw_seed(16)
 ==================================================
 
-Benchmark created around: 2016-03-30 14:41:26 +0000
+Benchmark created around: 2016-04-03 05:23:54 +0000
 
 Running for: 100000 iterations
 
 Rehearsal ----------------------------------------------------------
-Random.raw_seed(16)      0.080000   1.440000   1.520000 (  1.515513)
-PCGRandom.raw_seed(16)   0.110000   1.320000   1.430000 (  1.444519)
-------------------------------------------------- total: 2.950000sec
+Random.raw_seed(16)      0.080000   1.250000   1.330000 (  1.344069)
+PCGRandom.raw_seed(16)   0.090000   1.120000   1.210000 (  1.205356)
+------------------------------------------------- total: 2.540000sec
 
                              user     system      total        real
-Random.raw_seed(16)      0.080000   1.470000   1.550000 (  1.563351)
-PCGRandom.raw_seed(16)   0.090000   1.340000   1.430000 (  1.441253)
+Random.raw_seed(16)      0.080000   1.260000   1.340000 (  1.356403)
+PCGRandom.raw_seed(16)   0.100000   1.030000   1.130000 (  1.140350)
 ```

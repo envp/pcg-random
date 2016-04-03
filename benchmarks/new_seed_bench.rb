@@ -2,6 +2,7 @@ require 'benchmark'
 require 'pcg_random'
 
 Iterations = 100_000
+puts "### PCGRandom.new_seed"
 puts "```bash"
 puts "Benchmark of Random.new_seed vs PCGRandom.new_seed"
 puts "=================================================="

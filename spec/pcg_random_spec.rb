@@ -1,11 +1,17 @@
 require 'spec_helper'
 
-describe PcgRandom do
-  it 'has a version number' do
-    expect(PcgRandom::VERSION).not_to be nil
-  end
+# This set of tests is for the user facing functions
+#
 
-  it 'does something useful' do
-    expect(false).to eq(true)
+describe PCGRandom do
+  context '::new_seed' do
+    
+    it 'returns a strictly positive value' do
+      expect(PCGRandom.new_seed).to > 0
+    end
+    
+    it 'returns an Integral value' do
+      
+    end
   end
 end

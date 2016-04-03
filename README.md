@@ -72,47 +72,12 @@ Go ahead and try it, it's built to be as close to `Kernel::Random` as possible!
  => 23781278266665729678291694765199065088
 ```
 
-For detailed instructions, keep checking this repo, I'm working on getting a wiki up.
+For detailed instructions, have a look at the [glorious wiki](https://github.com/vaibhav-y/pcg-random/wiki) (Work In Progress™)
 
 
 ## Benchmarks
 
-### PCGRandom.new_seed
-```
-Benchmark of Random.new_seed vs PCGRandom.new_seed
-==================================================
-
-Benchmark created around: 2016-03-30 14:54:16 +0000
-
-Running for: 100000 iterations
-
-Rehearsal ------------------------------------------------------
-Random.new_seed      0.090000   1.240000   1.330000 (  1.323970)
-PCGRandom.new_seed   0.100000   1.150000   1.250000 (  1.254944)
---------------------------------------------- total: 2.580000sec
-
-                         user     system      total        real
-Random.new_seed      0.110000   1.200000   1.310000 (  1.321571)
-PCGRandom.new_seed   0.100000   1.130000   1.230000 (  1.222634)
-```
-### PCGRandom.raw_seed(16)
-```
-Benchmark of Random.raw_seed(16) vs PCGRandom.raw_seed(16)
-==================================================
-
-Benchmark created around: 2016-03-30 14:41:26 +0000
-
-Running for: 100000 iterations
-
-Rehearsal ----------------------------------------------------------
-Random.raw_seed(16)      0.080000   1.440000   1.520000 (  1.515513)
-PCGRandom.raw_seed(16)   0.110000   1.320000   1.430000 (  1.444519)
-------------------------------------------------- total: 2.950000sec
-
-                             user     system      total        real
-Random.raw_seed(16)      0.080000   1.470000   1.550000 (  1.563351)
-PCGRandom.raw_seed(16)   0.090000   1.340000   1.430000 (  1.441253)
-```
+See [wiki benchmark section](https://github.com/vaibhav-y/pcg-random/wiki/Benchmarks) for detailed benchmarks
 
 ## Roadmap
 

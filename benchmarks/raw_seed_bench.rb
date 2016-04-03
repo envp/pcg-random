@@ -4,6 +4,7 @@ require 'pcg_random'
 Iterations = 100_000
 SeedSize = 16
 
+puts "### PCGRandom.raw_seed(16)"
 puts "```bash"
 puts "Benchmark of Random.raw_seed(#{SeedSize}) vs PCGRandom.raw_seed(#{SeedSize})"
 puts "=================================================="
